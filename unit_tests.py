@@ -1,6 +1,7 @@
 import ctypes
 import os
 import sys
+import random
 
 lib = ctypes.CDLL('./rijndael.so')
 
