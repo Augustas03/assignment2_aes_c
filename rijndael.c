@@ -27,7 +27,7 @@ const unsigned char sBox[256] = {
     0x70, 0x3E, 0xB5, 0x66, 0x48, 0x03, 0xF6, 0x0E, 0x61, 0x35, 0x57, 0xB9, 0x86, 0xC1, 0x1D, 0x9E,
     0xE1, 0xF8, 0x98, 0x11, 0x69, 0xD9, 0x8E, 0x94, 0x9B, 0x1E, 0x87, 0xE9, 0xCE, 0x55, 0x28, 0xDF,
     0x8C, 0xA1, 0x89, 0x0D, 0xBF, 0xE6, 0x42, 0x68, 0x41, 0x99, 0x2D, 0x0F, 0xB0, 0x54, 0xBB, 0x16
-}
+};
 
 const unsigned char invSBox[256] = {
     0x52, 0x09, 0x6A, 0xD5, 0x30, 0x36, 0xA5, 0x38, 0xBF, 0x40, 0xA3, 0x9E, 0x81, 0xF3, 0xD7, 0xFB,
@@ -46,14 +46,14 @@ const unsigned char invSBox[256] = {
     0x60, 0x51, 0x7F, 0xA9, 0x19, 0xB5, 0x4A, 0x0D, 0x2D, 0xE5, 0x7A, 0x9F, 0x93, 0xC9, 0x9C, 0xEF,
     0xA0, 0xE0, 0x3B, 0x4D, 0xAE, 0x2A, 0xF5, 0xB0, 0xC8, 0xEB, 0xBB, 0x3C, 0x83, 0x53, 0x99, 0x61,
     0x17, 0x2B, 0x04, 0x7E, 0xBA, 0x77, 0xD6, 0x26, 0xE1, 0x69, 0x14, 0x63, 0x55, 0x21, 0x0C, 0x7D
-}
+};
 
 const unsigned char rCon[32] = {
     0x00, 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40,
     0x80, 0x1B, 0x36, 0x6C, 0xD8, 0xAB, 0x4D, 0x9A,
     0x2F, 0x5E, 0xBC, 0x63, 0xC6, 0x97, 0x35, 0x6A,
     0xD4, 0xB3, 0x7D, 0xFA, 0xEF, 0xC5, 0x91, 0x39
-}
+};
 
 void addRoundKey(unsigned char *state, unsigned char *roundKey, int sizeInBytes){
 	for(int i = 0; i < sizeInBytes; i++){
@@ -149,8 +149,8 @@ void mixColumns(unsigned char *state, int sizeInBytes){
 
 	unsigned char a = state[i];
 	unsigned char b = state[i + numOfColumns];
-	unsigned char c = state[i + (2 * numOfColumns];
-	unsigned char d = state[i + (3 * numOfColumns];
+	unsigned char c = state[i + (2 * numOfColumns)];
+	unsigned char d = state[i + (3 * numOfColumns)];
 
 	state[i] = xTime(a) ^ (xTime(b) ^ b) ^ c ^ d;
 	state[i + numOfColumns] = a ^ xTime(b) ^ (xTime(c) ^ c) ^ d;
@@ -259,20 +259,20 @@ unsigned char *aes_encrypt_block(unsigned char *plaintext, unsigned char *key, a
     	unsigned char *expandedKey = expandKey(key, sizeInBytes, numOfRounds);
 
     	//Initial Round adding the roundKey
-    	addRoundKey(state, &expandedKey[0]);
+    	addRoundKey(state, &expandedKey[0], sizeInBytes);
 
     	//9 iterations of subBytes, shiftRows, mixColumns and addRoundKey
     	for (int round = 1; round < numOfRounds; round++) {
-        	subBytes(state);
-        	shiftRows(state);
-        	mixColumns(state);
-        	addRoundKey(state, &expandedKey[round * sizeInBytes]);
+        	subBytes(state, sizeInBytes);
+        	shiftRows(state, sizeInBytes);
+        	mixColumns(state, sizeInBytes);
+        	addRoundKey(state, &expandedKey[round * sizeInBytes], sizeInBytes);
     	}
 
     	//Final round with no mixColumns
-    	subBytes(state);
-    	shiftRows(state);
-    	addRoundKey(state, &expandedKey[numOfRounds * sizeInBytes]);
+    	subBytes(state, sizeInBytes);
+    	shiftRows(state, sizeInBytes);
+    	addRoundKey(state, &expandedKey[numOfRounds * sizeInBytes], sizeInBytes);
 
     	free(expandedKey);
 
@@ -303,24 +303,32 @@ unsigned char *aes_decrypt_block(unsigned char *ciphertext, unsigned char *key, 
         	state[i] = ciphertext[i];
     	}
 
-    	unsigned char *expandedKey = expandKey(key);
+    	unsigned char *expandedKey = expandKey(key, sizeInBytes, numOfRounds);
 
     	//Initially undo the last rounds addRoundKey
-    	addRoundKey(state, &expandedKey[numOfRounds * sizeInBytes]);
+    	addRoundKey(state, &expandedKey[numOfRounds * sizeInBytes], sizeInBytes);
 
     	//Inverse of encrypt rounds
-    	for (int round = numOfRounds; round > 0; round--) {
-        	invShiftRows(state);
-        	invSubBytes(state);
-        	addRoundKey(state, &expandedKey[round * sizeInBytes]);
-        	invMixColumns(state);
+    	for (int round = numOfRounds - 1; round > 0; round--) {
+        	invShiftRows(state, sizeInBytes);
+        	invSubBytes(state, sizeInBytes);
+        	addRoundKey(state, &expandedKey[round * sizeInBytes], sizeInBytes);
+        	invMixColumns(state, sizeInBytes);
     	}
 
-    	invShiftRows(state);
-    	invSubBytes(state);
-    	addRoundKey(state, &expandedKey[0]);
+    	invShiftRows(state, sizeInBytes);
+    	invSubBytes(state, sizeInBytes);
+    	addRoundKey(state, &expandedKey[0], sizeInBytes);
 
     	free(expandedKey);
 
     	return state;
+}
+
+unsigned char block_access(unsigned char *block, size_t row, size_t col, aes_block_size_t block_size) {
+   	// Determine number of columns based on the block size enum
+    	int numOfColumns = (int)block_size / 4;
+
+    	// Row-major indexing: (row_index * row_length) + column_index
+    	return block[row * numOfColumns + col];
 }
