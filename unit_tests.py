@@ -31,7 +31,7 @@ def testSubBytes():
     pyMatrix = ref_aes.bytes2matrix(data)
     ref_aes.sub_bytes(pyMatrix)
 
-    expected = list(ref_aes.matrix2bytes(py_matrix))
+    expected = list(ref_aes.matrix2bytes(pyMatrix))
 
     assert cOutput == expected, f"Mismatch C output: {cOutput}, Python output: {expected}"
 
