@@ -1,6 +1,7 @@
 /*
- * TODO: Add your name and student number here, along with
- *       a brief description of this code.
+ * Augustas Cmukas A00049385
+ * This code is the header file. Made changes to the enums by including a value associated to
+ * the length od the block in bytes.
  */
 
 #ifndef RIJNDAEL_H
