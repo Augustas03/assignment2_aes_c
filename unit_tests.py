@@ -2,7 +2,7 @@ import ctypes
 import os
 import sys
 
-lib = ctypes.CDLL('./rihndael.so')
+lib = ctypes.CDLL('./rijndael.so')
 
 sys.path.append('./python_reference')
 
