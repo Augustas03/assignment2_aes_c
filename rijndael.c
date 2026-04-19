@@ -222,6 +222,11 @@ unsigned char *expandKey(unsigned char *cipherKey, int sizeInBytes, int numOfRou
 
 			//Use rCon to XOR
 			temp[0] = temp[0] ^ rCon[rconIteration++];
+		}else if( sizeInBytes == 32 && bytesGenerated % sizeInBytes == 16){
+			temp[0] = sBox[temp[0]];
+			temp[1] = sBox[temp[1]];
+			temp[2] = sBox[temp[2]];
+			temp[3] = sBox[temp[3]];
 		}
 
 		for(int i = 0; i < 4; i++){
